@@ -8,29 +8,23 @@
 </head>
 <body>
     <!-- <script src="./reactivity.global.js"></script> -->
-    <!-- <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
     <script type="text/javascript">
         const {effect, reactive} = VueReactivity;
         const person = reactive({name: '张三', age: 18});
         const body = document.getElementsByTagName("body")[0];
-        
+        body.appendChild(button);
         let button = document.createElement("button");
         button.addEventListener("click", ()=>{person.age++;});
-        body.appendChild(button);
         console.log(person)
 
         effect(()=>{
             button.innerHTML = `${person.name}:${person.age}`;
+            
+            
         })
 
         
-    </script> -->
-    <script src="./reactivity.global.js"></script>
-    <script type="text/javascript">
-        const {effect, reactive} = VueReactivity;
-        const person = reactive({name: '张三', age: 18});
-        console.log(person);
-
     </script>
 </body>
 </html>
