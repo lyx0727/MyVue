@@ -1,6 +1,5 @@
 import { isObject } from "@vue/shared";
 import { track } from "./effect";
-import { trigger } from "./effect";
 
 // record object which has had proxy
 const reactiveMap = new WeakMap();
@@ -45,7 +44,7 @@ export function reactive(target: any){
             
             // changed
             if(oldValue !== value){
-                trigger(target, 'set', key, value, oldValue);
+                trigger();
             }
 
             return result;

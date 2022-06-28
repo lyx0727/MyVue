@@ -1,15 +1,5 @@
-// current 'effect'
 export let activeEffect:any = undefined;
-
-function cleanupEffect(effect:any){
-    const {deps} = effect;
-    for(let i = 0; i < deps.length; i++){
-        deps[i].delete(effect);
-    }
-    effect.deps.length = 0;
-}
-
-class ReactiveEffect{
+class ReactiveEffective{
     public active = true;
     public parent = null;
     public deps = [];
@@ -26,8 +16,6 @@ class ReactiveEffect{
             this.parent = activeEffect;
             // set current 'effect'
             activeEffect = this;
-            // clean 
-            cleanupEffect(this);
             return this.fn();
         }
         finally{
@@ -35,24 +23,11 @@ class ReactiveEffect{
             activeEffect = this.parent;
         }
     }
-
-    stop(){
-        if(this.active){
-            this.active = false;
-            cleanupEffect(this);
-        }
-    }
 }
 
 export function effect(fn:Function){
-    const _effect = new ReactiveEffect(fn);
+    const _effect = new ReactiveEffective(fn);
     _effect.run();
-
-    // bind this
-    const runner:any = _effect.run.bind(_effect);
-    // mount 'effect' on 'runner'
-    runner.effect = _effect;
-    return runner;
 }
 
 const targetMap = new WeakMap();
@@ -81,10 +56,8 @@ export function trigger(target:any, type:string, key:string|symbol, value:any, o
     let effects = depsMap.get(key);
 
     if(effects){
-        // copy to avoid infinite loop
         effects = new Set(effects);
-        effects.forEach((effect:any) => {
-            // acoid self-recursion
+        effects.forEach(effect:any => {
             if(effect !== activeEffect){
                 effect.run();
             }

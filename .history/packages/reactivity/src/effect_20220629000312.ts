@@ -35,24 +35,11 @@ class ReactiveEffect{
             activeEffect = this.parent;
         }
     }
-
-    stop(){
-        if(this.active){
-            this.active = false;
-            cleanupEffect(this);
-        }
-    }
 }
 
 export function effect(fn:Function){
     const _effect = new ReactiveEffect(fn);
     _effect.run();
-
-    // bind this
-    const runner:any = _effect.run.bind(_effect);
-    // mount 'effect' on 'runner'
-    runner.effect = _effect;
-    return runner;
 }
 
 const targetMap = new WeakMap();
@@ -81,7 +68,6 @@ export function trigger(target:any, type:string, key:string|symbol, value:any, o
     let effects = depsMap.get(key);
 
     if(effects){
-        // copy to avoid infinite loop
         effects = new Set(effects);
         effects.forEach((effect:any) => {
             // acoid self-recursion

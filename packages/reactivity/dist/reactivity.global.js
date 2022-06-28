@@ -30,6 +30,82 @@ var VueReactivity = (() => {
     return value !== null && typeof value === "object";
   };
 
+  // packages/reactivity/src/effect.ts
+  var activeEffect = void 0;
+  function cleanupEffect(effect2) {
+    const { deps } = effect2;
+    for (let i = 0; i < deps.length; i++) {
+      deps[i].delete(effect2);
+    }
+    effect2.deps.length = 0;
+  }
+  var ReactiveEffect = class {
+    constructor(fn) {
+      this.fn = fn;
+      this.active = true;
+      this.parent = null;
+      this.deps = [];
+    }
+    run() {
+      if (!this.active) {
+        return this.fn();
+      }
+      try {
+        this.parent = activeEffect;
+        activeEffect = this;
+        cleanupEffect(this);
+        return this.fn();
+      } finally {
+        activeEffect = this.parent;
+      }
+    }
+    stop() {
+      if (this.active) {
+        this.active = false;
+        cleanupEffect(this);
+      }
+    }
+  };
+  function effect(fn) {
+    const _effect = new ReactiveEffect(fn);
+    _effect.run();
+    const runner = _effect.run.bind(_effect);
+    runner.effect = _effect;
+    return runner;
+  }
+  var targetMap = /* @__PURE__ */ new WeakMap();
+  function track(target, type, key) {
+    if (!activeEffect)
+      return;
+    let depsMap = targetMap.get(target);
+    if (!depsMap) {
+      targetMap.set(target, depsMap = /* @__PURE__ */ new Map());
+    }
+    let dep = depsMap.get(key);
+    if (!dep) {
+      depsMap.set(key, dep = /* @__PURE__ */ new Set());
+    }
+    let shouldTrack = !dep.has(activeEffect);
+    if (shouldTrack) {
+      dep.add(activeEffect);
+      activeEffect.deps.push(dep);
+    }
+  }
+  function trigger(target, type, key, value, oldValue) {
+    const depsMap = targetMap.get(target);
+    if (!depsMap)
+      return;
+    let effects = depsMap.get(key);
+    if (effects) {
+      effects = new Set(effects);
+      effects.forEach((effect2) => {
+        if (effect2 !== activeEffect) {
+          effect2.run();
+        }
+      });
+    }
+  }
+
   // packages/reactivity/src/reactive.ts
   var reactiveMap = /* @__PURE__ */ new WeakMap();
   function reactive(target) {
@@ -48,18 +124,20 @@ var VueReactivity = (() => {
         if (key === "__v_isReactive" /* IS_REACTIVE */) {
           return true;
         }
+        track(target2, "get", key);
         return Reflect.get(target2, key, receiver);
       },
       set(target2, key, value, receiver) {
-        return Reflect.set(target2, key, value, receiver);
+        let oldValue = target2[key];
+        let result = Reflect.set(target2, key, value, receiver);
+        if (oldValue !== value) {
+          trigger(target2, "set", key, value, oldValue);
+        }
+        return result;
       }
     });
     reactiveMap.set(target, proxy);
     return proxy;
-  }
-
-  // packages/reactivity/src/effect.ts
-  function effect() {
   }
   return __toCommonJS(src_exports);
 })();

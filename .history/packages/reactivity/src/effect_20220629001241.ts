@@ -49,9 +49,8 @@ export function effect(fn:Function){
     _effect.run();
 
     // bind this
-    const runner:any = _effect.run.bind(_effect);
-    // mount 'effect' on 'runner'
-    runner.effect = _effect;
+    const runner = _effect.run.bind(_effect);
+
     return runner;
 }
 
