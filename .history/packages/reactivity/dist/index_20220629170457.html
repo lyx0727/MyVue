@@ -7,9 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <script src="./reactivity.global.js"></script>
+    <!-- <script src="./reactivity.global.js"></script> -->
     <!-- <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script> -->
-    <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
+    <script src="../../../node_modules/vue/dist/vue.global.js"></script>
     <script type="text/javascript">
         const body = document.getElementsByTagName("body")[0];
         
@@ -83,27 +83,22 @@
 
         // test 'ref' ...
         function test4(){
-            const {toRef, ref, toRefs, reactive, effect} = VueReactivity;
+            const {toRef, ref, toRefs, reactive, effect} = Vue;
             let person = reactive({name: 'Alex', age: 18});
             const {name, age} = toRefs(person);
             const zero = ref(0);
 
             effect(()=>{
-                console.log('person: ', person.name, person.age)
-                console.log('zero: ', zero.value);
+                console.log(person.name, person.age)
             })
 
             setTimeout(()=>{
                 name.value = 'lyx';
-            }, 200);
+            }, 500);
 
             setTimeout(()=>{
                 age.value = 19;
-            }, 400);
-
-            setTimeout(()=>{
-                zero.value = 1;
-            }, 600);
+            }, 1000);
         }
 
         // test1();

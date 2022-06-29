@@ -23,7 +23,12 @@ var VueReactivity = (() => {
   __export(src_exports, {
     computed: () => computed,
     effect: () => effect,
+    isRef: () => isRef,
+    proxyRefs: () => proxyRefs,
     reactive: () => reactive,
+    ref: () => ref,
+    toRef: () => toRef,
+    toRefs: () => toRefs,
     watch: () => watch
   });
 
@@ -33,6 +38,9 @@ var VueReactivity = (() => {
   };
   var isFunction = (value) => {
     return typeof value === "function";
+  };
+  var isArray = (value) => {
+    return Array.isArray(value);
   };
 
   // packages/reactivity/src/effect.ts
@@ -242,6 +250,75 @@ var VueReactivity = (() => {
     };
     const effect2 = new ReactiveEffect(getter, job);
     oldValue = effect2.run();
+  }
+
+  // packages/reactivity/src/ref.ts
+  function toReactive(value) {
+    return isObject(value) ? reactive(value) : value;
+  }
+  function isRef(value) {
+    return value && value["__v_isRef" /* IS_REF */];
+  }
+  var RefImpl = class {
+    constructor(rawValue) {
+      this.rawValue = rawValue;
+      this.__v_isRef = true;
+      this.dep = /* @__PURE__ */ new Set();
+      this._value = toReactive(rawValue);
+    }
+    get value() {
+      trackEffects(this.dep);
+      return this._value;
+    }
+    set value(newValue) {
+      if (newValue !== this.rawValue) {
+        this._value = toReactive(newValue);
+        this.rawValue = newValue;
+        triggerEffects(this.dep);
+      }
+    }
+  };
+  function ref(value) {
+    return new RefImpl(value);
+  }
+  var ObjectRefImpl = class {
+    constructor(object, key) {
+      this.object = object;
+      this.key = key;
+    }
+    get value() {
+      return this.object[this.key];
+    }
+    set value(newValue) {
+      this.object[this.key] = newValue;
+    }
+  };
+  function toRef(object, key) {
+    return new ObjectRefImpl(object, key);
+  }
+  function toRefs(object) {
+    let res = isArray(object) ? new Array(object.length) : {};
+    for (const key in object) {
+      res[key] = toRef(object, key);
+    }
+    return res;
+  }
+  function proxyRefs(object) {
+    return new Proxy(object, {
+      get(target, key, receiver) {
+        const r = Reflect.get(target, key, receiver);
+        return isRef(r) ? r.value : r;
+      },
+      set(target, key, value, receiver) {
+        const oldValue = target[key];
+        if (isRef(oldValue)) {
+          oldValue.value = value;
+          return true;
+        } else {
+          return Reflect.set(target, key, value, receiver);
+        }
+      }
+    });
   }
   return __toCommonJS(src_exports);
 })();

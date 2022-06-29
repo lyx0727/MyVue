@@ -83,7 +83,7 @@
 
         // test 'ref' ...
         function test4(){
-            const {toRef, ref, toRefs, reactive, effect} = VueReactivity;
+            const {toRef, ref, toRefs, reactive, effect} = Vue;
             let person = reactive({name: 'Alex', age: 18});
             const {name, age} = toRefs(person);
             const zero = ref(0);

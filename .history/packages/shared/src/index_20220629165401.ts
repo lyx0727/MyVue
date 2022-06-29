@@ -7,5 +7,5 @@ export const isFunction = (value:any)=>{
 }
 
 export const isArray = (value:any)=>{
-    return Array.isArray(value);
+    return Array.isArray(value)l;
 }
