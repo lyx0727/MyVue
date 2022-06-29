@@ -26,7 +26,7 @@ export function reactive(target: any){
         return target;
     }
 
-    const proxy:any = new Proxy(target, {
+    const proxy = new Proxy(target, {
         get(target, key, receiver){
             if(key === ReactiveFlags.IS_REACTIVE){
                 return true;
