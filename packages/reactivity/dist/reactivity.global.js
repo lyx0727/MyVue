@@ -21,6 +21,7 @@ var VueReactivity = (() => {
   // packages/reactivity/src/index.ts
   var src_exports = {};
   __export(src_exports, {
+    computed: () => computed,
     effect: () => effect,
     reactive: () => reactive
   });
@@ -29,10 +30,13 @@ var VueReactivity = (() => {
   var isObject = (value) => {
     return value !== null && typeof value === "object";
   };
+  var isFunction = (value) => {
+    return typeof value === "function";
+  };
 
   // packages/reactivity/src/effect.ts
   var activeEffect = void 0;
-  function cleanupEffect(effect2) {
+  function cleanupEffects(effect2) {
     const { deps } = effect2;
     for (let i = 0; i < deps.length; i++) {
       deps[i].delete(effect2);
@@ -40,8 +44,9 @@ var VueReactivity = (() => {
     effect2.deps.length = 0;
   }
   var ReactiveEffect = class {
-    constructor(fn) {
+    constructor(fn, scheduler) {
       this.fn = fn;
+      this.scheduler = scheduler;
       this.active = true;
       this.parent = null;
       this.deps = [];
@@ -53,7 +58,7 @@ var VueReactivity = (() => {
       try {
         this.parent = activeEffect;
         activeEffect = this;
-        cleanupEffect(this);
+        cleanupEffects(this);
         return this.fn();
       } finally {
         activeEffect = this.parent;
@@ -62,16 +67,25 @@ var VueReactivity = (() => {
     stop() {
       if (this.active) {
         this.active = false;
-        cleanupEffect(this);
+        cleanupEffects(this);
       }
     }
   };
-  function effect(fn) {
-    const _effect = new ReactiveEffect(fn);
+  function effect(fn, options = {}) {
+    const _effect = new ReactiveEffect(fn, options.scheduler);
     _effect.run();
     const runner = _effect.run.bind(_effect);
     runner.effect = _effect;
     return runner;
+  }
+  function trackEffects(dep) {
+    if (activeEffect) {
+      let shouldTrack = !dep.has(activeEffect);
+      if (shouldTrack) {
+        dep.add(activeEffect);
+        activeEffect.deps.push(dep);
+      }
+    }
   }
   var targetMap = /* @__PURE__ */ new WeakMap();
   function track(target, type, key) {
@@ -85,10 +99,20 @@ var VueReactivity = (() => {
     if (!dep) {
       depsMap.set(key, dep = /* @__PURE__ */ new Set());
     }
-    let shouldTrack = !dep.has(activeEffect);
-    if (shouldTrack) {
-      dep.add(activeEffect);
-      activeEffect.deps.push(dep);
+    trackEffects(dep);
+  }
+  function triggerEffects(effects) {
+    if (effects) {
+      effects = new Set(effects);
+      effects.forEach((effect2) => {
+        if (effect2 !== activeEffect) {
+          if (effect2.scheduler) {
+            effect2.scheduler();
+          } else {
+            effect2.run();
+          }
+        }
+      });
     }
   }
   function trigger(target, type, key, value, oldValue) {
@@ -96,14 +120,7 @@ var VueReactivity = (() => {
     if (!depsMap)
       return;
     let effects = depsMap.get(key);
-    if (effects) {
-      effects = new Set(effects);
-      effects.forEach((effect2) => {
-        if (effect2 !== activeEffect) {
-          effect2.run();
-        }
-      });
-    }
+    triggerEffects(effects);
   }
 
   // packages/reactivity/src/reactive.ts
@@ -138,6 +155,46 @@ var VueReactivity = (() => {
     });
     reactiveMap.set(target, proxy);
     return proxy;
+  }
+
+  // packages/reactivity/src/computed.ts
+  var ComputedRefImpl = class {
+    constructor(getter, setter) {
+      this.setter = setter;
+      this.dep = /* @__PURE__ */ new Set();
+      this._dirty = true;
+      this.effect = new ReactiveEffect(getter, () => {
+        if (!this._dirty) {
+          this._dirty = true;
+          triggerEffects(this.dep);
+        }
+      });
+    }
+    get value() {
+      trackEffects(this.dep);
+      if (this._dirty) {
+        this._value = this.effect.run();
+        this._dirty = false;
+      }
+      return this._value;
+    }
+    set value(newValue) {
+      this._value = newValue;
+      this._dirty = true;
+    }
+  };
+  function computed(getterOrOptions) {
+    let getter, setter;
+    if (isFunction(getterOrOptions)) {
+      getter = getterOrOptions;
+      setter = () => {
+        console.warn("no setter");
+      };
+    } else {
+      getter = getterOrOptions.get;
+      setter = getterOrOptions.set;
+    }
+    return new ComputedRefImpl(getter, setter);
   }
   return __toCommonJS(src_exports);
 })();
