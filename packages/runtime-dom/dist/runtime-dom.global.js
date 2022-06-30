@@ -25,6 +25,7 @@ var VueRuntimeDOM = (() => {
     createRenderer: () => createRenderer,
     createVnode: () => createVnode,
     h: () => h,
+    isSameVnode: () => isSameVnode,
     isVnode: () => isVnode,
     render: () => render
   });
@@ -42,6 +43,9 @@ var VueRuntimeDOM = (() => {
   var Text = Symbol("Text");
   function isVnode(value) {
     return value && value.__v_isVnode;
+  }
+  function isSameVnode(n1, n2) {
+    return n1.type === n2.type && n1.key === n2.key;
   }
   function createVnode(type, props, children = null) {
     let shapeFlag = isString(type) ? 1 /* ELEMENT */ : 0;
@@ -78,15 +82,16 @@ var VueRuntimeDOM = (() => {
       createElement: hostCreateElement,
       createText: hostCreateText
     } = renderOptions2;
-    const normalize = (child) => {
-      if (isString(child)) {
-        return createVnode(Text, null, child);
+    const normalize = (children, i) => {
+      if (isString(children[i])) {
+        const vnode = createVnode(Text, null, children[i]);
+        children[i] = vnode;
       }
-      return child;
+      return children[i];
     };
     const mountChildren = (children, container) => {
       for (let i = 0; i < children.length; i++) {
-        let child = normalize(children[i]);
+        let child = normalize(children, i);
         patch(null, child, container);
       }
     };
@@ -106,19 +111,79 @@ var VueRuntimeDOM = (() => {
       hostInsert(el, container);
     };
     const processText = (n1, n2, container) => {
-      if (n1 === null) {
+      if (n1 == null) {
         hostInsert(n2.el = hostCreateText(n2.children), container);
+      } else {
+        const el = n2.el = n1.el;
+        if (n1.children !== n2.children) {
+          hostSetText(el, n2.children);
+        }
       }
     };
     const processElement = (n1, n2, container) => {
-      if (n1 === null) {
+      if (n1 == null) {
         mountElement(n2, container);
       } else {
+        patchElement(n1, n2, container);
       }
+    };
+    const patchProps = (oldProps, newProps, el) => {
+      for (let key in newProps) {
+        hostPatchProp(el, key, oldProps[key], newProps[key]);
+      }
+      for (let key in oldProps) {
+        if (newProps[key] == null) {
+          hostPatchProp(el, key, oldProps[key], null);
+        }
+      }
+    };
+    const unmountChildren = (children) => {
+      for (let i = 0; i < children.length; i++) {
+        unmount(children[i]);
+      }
+    };
+    const patchChildren = (n1, n2, el) => {
+      const c1 = n1.children;
+      const c2 = n2.children;
+      const prevShapeFlag = n1.shapeFlag;
+      const shapeFlag = n2.shapeFlag;
+      if (shapeFlag & 8 /* TEXT_CHILDREN */) {
+        if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
+          unmountChildren(c1);
+        }
+        if (c1 !== c2) {
+          hostSetElementText(el, c2);
+        }
+      } else {
+        if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
+          if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+          } else {
+            unmountChildren(c1);
+          }
+        } else {
+          if (prevShapeFlag & 8 /* TEXT_CHILDREN */) {
+            hostSetElementText(el, "");
+          }
+          if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+            mountChildren(c2, el);
+          }
+        }
+      }
+    };
+    const patchElement = (n1, n2, container) => {
+      const el = n2.el = n1.el;
+      let oldProps = n1.props || {};
+      let newProps = n2.props || {};
+      patchProps(oldProps, newProps, el);
+      patchChildren(n1, n2, el);
     };
     const patch = (n1, n2, container) => {
       if (n1 === n2) {
         return;
+      }
+      if (n1 && !isSameVnode(n1, n2)) {
+        unmount(n1);
+        n1 = null;
       }
       const { type, shapeFlag } = n2;
       switch (type) {
@@ -254,12 +319,12 @@ var VueRuntimeDOM = (() => {
 
   // packages/runtime-dom/src/modules/style.ts
   function patchStyle(el, prevValue, nextValue) {
-    for (const key in nextValue) {
+    for (let key in nextValue) {
       el.style[key] = nextValue[key];
     }
     if (prevValue) {
-      for (const key in prevValue) {
-        if (nextValue[key] === null) {
+      for (let key in prevValue) {
+        if (nextValue == null || nextValue[key] == null) {
           el.style[key] = null;
         }
       }

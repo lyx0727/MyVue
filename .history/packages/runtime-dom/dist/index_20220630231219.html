@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="./runtime-dom.global.js"></script>
+    <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+    <!-- <script src="../../../node_modules/@vue/runtime-core/dist/runtime-core.cjs.js"></script> -->
+    <script type="text/javascript">
+        const body = document.getElementsByTagName("body")[0];
+        
+        // test 
+        function test1(){
+            const {h, render} = VueRuntimeDOM;
+            render(h('div', {style:{backgroundColor:'red'}}, [
+                h('h1', {style:{color:'white'}}, 'hello world'),
+                h('h2', {style:{color:'green'}}, 'goodbye world'),
+            ]), body);
+
+            setTimeout(()=>{
+                render(null, body);
+            }, 1000);
+        }
+
+        function test2(){
+            const {h, render} = VueRuntimeDOM;
+            render(h('div', {style:{backgroundColor:'black'}}, [
+                h('h1', {style:{color:'white'}}, 'hello world'),
+                h('h2', {style:{color:'green'}}, 'goodbye world'),
+            ]), body);
+
+            setTimeout(()=>{
+                render(h('div', {style:{backgroundColor:'gray'}}, [
+                    h('h1', {style:{color:'green'}}, 'hello'),
+                    h('h2', {style:{color:'white'}}, 'goodbye'),
+                    h('h3', {style:{color:'gold'}}, 'world'),
+            ]), body);
+            }, 1000);
+        }
+        
+        // test1();
+        test2();
+    </script>
+</body>
+</html>
