@@ -6,10 +6,6 @@ export const isFunction = (value:any)=>{
     return typeof value === 'function';
 }
 
-export const isString = (value:any)=>{
-    return typeof value === 'string';
-}
-
 export const isArray = Array.isArray;
 export const assign = Object.assign;
 
@@ -24,5 +20,5 @@ export const enum ShapeFlags {
     SUSPENSE                    = 1 << 7,
     COMPONENT_SHOULD_KEEP_ALIVE = 1 << 8,
     COMPONENT_KEPT_ALIVE        = 1 << 9,
-    COMPONENT = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.FUNCTIONAL_COMPONENT
-};
+    COMPONENT_KEPT_ALIVE        = 1 << 10,
+}

@@ -6,9 +6,7 @@ export const isFunction = (value:any)=>{
     return typeof value === 'function';
 }
 
-export const isString = (value:any)=>{
-    return typeof value === 'string';
-}
+export const isString = 
 
 export const isArray = Array.isArray;
 export const assign = Object.assign;
