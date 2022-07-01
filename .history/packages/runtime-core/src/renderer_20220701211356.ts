@@ -107,6 +107,7 @@ export function createRenderer(renderOptions:any){
 
     const setupRenderEffect = (instance:any, container:any, anchor:any)=>{
         const componentUpdateFn = ()=>{
+            // debugger
             const {render} = instance;
             if(!instance.isMounted){
                 // set 'state' as 'this'
@@ -166,7 +167,7 @@ export function createRenderer(renderOptions:any){
 
     const updateComponent = (n1:any, n2:any)=>{
         // for component, reuse 'instance'
-        const instance = (n2.component = n1.component);
+        const instance = (n1.component = n2.component);
         const {props:prevProps} = n1;
         const {props:nextProps} = n2;
 

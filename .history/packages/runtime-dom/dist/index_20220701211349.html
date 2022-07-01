@@ -148,8 +148,8 @@
                 },
                 render(){
                     return h(Fragment, [
-                        h(Child, {country: this.en ? 'China' : '中国'}),
-                        h('button', {onClick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
+                        // h(Child, {country: this.en ? 'China' : '中国'}),
+                        h('button', {onclick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
                     ]);
                 }
             }

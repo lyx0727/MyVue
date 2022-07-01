@@ -165,8 +165,9 @@ export function createRenderer(renderOptions:any){
     }
 
     const updateComponent = (n1:any, n2:any)=>{
+        debugger
         // for component, reuse 'instance'
-        const instance = (n2.component = n1.component);
+        const instance = (n1.component = n2.component);
         const {props:prevProps} = n1;
         const {props:nextProps} = n2;
 

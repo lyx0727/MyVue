@@ -1,7 +1,6 @@
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { isString, ShapeFlags } from "@vue/shared";
 import { createComponentInstance, setupComponent } from "./component";
-import { updateProps } from "./componentProps";
 import { queueJob } from "./scheduler";
 import { createVnode, isSameVnode, Text, Fragment } from "./vnode";
 
@@ -166,11 +165,8 @@ export function createRenderer(renderOptions:any){
 
     const updateComponent = (n1:any, n2:any)=>{
         // for component, reuse 'instance'
-        const instance = (n2.component = n1.component);
-        const {props:prevProps} = n1;
-        const {props:nextProps} = n2;
+        const instance = (n1.component = n2.component);
 
-        updateProps(instance, prevProps, nextProps);
     }
     
     const processComponent = (n1:any, n2:any, container:any, anchor:any = null)=>{

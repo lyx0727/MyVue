@@ -149,7 +149,7 @@
                 render(){
                     return h(Fragment, [
                         h(Child, {country: this.en ? 'China' : '中国'}),
-                        h('button', {onClick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
+                        h('button', {onclick:()=>{this.en = !this.en}}, `${this.en ? 'English' : '中文'}`)
                     ]);
                 }
             }
@@ -158,39 +158,42 @@
 
         function testPromise(){
             const promise = Promise.resolve();
-            let close = false;
-            const queue = [];
-            const queueJob = (cb)=>{
-                if(!queue.includes(cb)){
-                    queue.push(cb);
-                }
-                if(!close){
-                    close = true;
-                    promise.then(()=>{
-                        close = false;
-                        let copy = queue.slice();
-                        queue.length = 0;
-                        for(const job of copy){
-                            job();
-                        }
-                        copy.length = 0;
-                    });
-                }
+        let close = false;
+        const queue = [];
+        const queueJob = (cb)=>{
+            if(!queue.includes(cb)){
+                queue.push(cb);
             }
-            const update = ()=>{
-                console.log('@');
-                render();
+            if(!close){
+                close = true;
+                promise.then(()=>{
+                    close = false;
+                    let copy = queue.slice();
+                    queue.length = 0;
+                    for(const job of copy){
+                        job();
+                    }
+                    copy.length = 0;
+                });
             }
-            const render = ()=>{
-                setTimeout(()=>{
-                    // update();
-                    // update();
-                    queueJob(update);
-                    queueJob(update);
-                }, 500);
+        }
 
-            }
-            // render();
+        const update = ()=>{
+            console.log('@');
+            render();
+        }
+
+        const render = ()=>{
+            setTimeout(()=>{
+                // update();
+                // update();
+                queueJob(update);
+                queueJob(update);
+            }, 500);
+
+        }
+
+        // render();
         }
 
         // test1();

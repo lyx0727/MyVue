@@ -34,18 +34,8 @@ const hasPropsChanged = (prevProps:any = {}, nextProps:any = {})=>{
             return true;
         }
     }
-    return false;
 }
 
 export function updateProps(instance:any, prevProps:any, nextProps:any){
-    if(hasPropsChanged(prevProps, nextProps)){
-        for(const key in nextProps){
-            instance.props[key] = nextProps[key];
-        }
-        for(const key in instance.props){
-            if(!hasOwn(nextProps, key)){
-                delete instance.props[key];
-            }
-        }
-    }
+
 }

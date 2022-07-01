@@ -186,6 +186,31 @@ var VueRuntimeDOM = (() => {
     instance.props = reactive(props);
     instance.attrs = attrs;
   }
+  var hasPropsChanged = (prevProps = {}, nextProps = {}) => {
+    const nextKeys = Object.keys(nextProps);
+    if (nextKeys.length !== Object.keys(prevProps).length) {
+      return true;
+    }
+    for (let i = 0; i < nextKeys.length; i++) {
+      const key = nextKeys[i];
+      if (nextProps[key] !== prevProps[key]) {
+        return true;
+      }
+    }
+    return false;
+  };
+  function updateProps(instance, prevProps, nextProps) {
+    if (hasPropsChanged(prevProps, nextProps)) {
+      for (const key in nextProps) {
+        instance.props[key] = nextProps[key];
+      }
+      for (const key in instance.props) {
+        if (!hasOwn(nextProps, key)) {
+          delete instance.props[key];
+        }
+      }
+    }
+  }
 
   // packages/runtime-core/src/component.ts
   function createComponentInstance(vnode) {
@@ -242,8 +267,8 @@ var VueRuntimeDOM = (() => {
         return console.warn("data option must be a function");
       }
       instance.data = reactive(data.call(instance.proxy));
-      instance.render = type.render;
     }
+    instance.render = type.render;
   }
 
   // packages/runtime-core/src/scheduler.ts
@@ -433,11 +458,17 @@ var VueRuntimeDOM = (() => {
         patchElement(n1, n2, container);
       }
     };
+    const updateComponent = (n1, n2) => {
+      const instance = n2.component = n1.component;
+      const { props: prevProps } = n1;
+      const { props: nextProps } = n2;
+      updateProps(instance, prevProps, nextProps);
+    };
     const processComponent = (n1, n2, container, anchor = null) => {
       if (n1 == null) {
         mountComponent(n2, container, anchor);
       } else {
-        updateComponent(n1, n2, container);
+        updateComponent(n1, n2);
       }
     };
     const patchProps = (oldProps, newProps, el) => {

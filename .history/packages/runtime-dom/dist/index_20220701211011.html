@@ -149,7 +149,7 @@
                 render(){
                     return h(Fragment, [
                         h(Child, {country: this.en ? 'China' : '中国'}),
-                        h('button', {onClick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
+                        h('button', {onclick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
                     ]);
                 }
             }
@@ -177,10 +177,12 @@
                     });
                 }
             }
+
             const update = ()=>{
                 console.log('@');
                 render();
             }
+
             const render = ()=>{
                 setTimeout(()=>{
                     // update();
@@ -190,6 +192,7 @@
                 }, 500);
 
             }
+
             // render();
         }
 

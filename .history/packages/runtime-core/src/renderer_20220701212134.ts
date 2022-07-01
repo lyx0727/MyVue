@@ -95,6 +95,7 @@ export function createRenderer(renderOptions:any){
     }
 
     const mountComponent = (vnode:any, container:any, anchor:any = null)=>{
+        debugger
         // 1. create an instance
         const instance = vnode.component = createComponentInstance(vnode);
 
@@ -166,7 +167,7 @@ export function createRenderer(renderOptions:any){
 
     const updateComponent = (n1:any, n2:any)=>{
         // for component, reuse 'instance'
-        const instance = (n2.component = n1.component);
+        const instance = (n1.component = n2.component);
         const {props:prevProps} = n1;
         const {props:nextProps} = n2;
 

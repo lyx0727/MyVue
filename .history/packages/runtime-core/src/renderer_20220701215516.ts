@@ -96,6 +96,7 @@ export function createRenderer(renderOptions:any){
 
     const mountComponent = (vnode:any, container:any, anchor:any = null)=>{
         // 1. create an instance
+        debugger
         const instance = vnode.component = createComponentInstance(vnode);
 
         // 2. assign value to the instance
