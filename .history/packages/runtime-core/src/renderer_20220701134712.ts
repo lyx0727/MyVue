@@ -240,12 +240,7 @@ export function createRenderer(renderOptions:any){
                         }
                         // patched
                         else{
-                            if(j < 0 || i !== increasingNewIndexSequence[j]){
-                                hostInsert(current.el, el, anchor);
-                            }
-                            else{
-                                j--;
-                            }
+                            hostInsert(current.el, el, anchor);
                         }
                     }
 

@@ -3,45 +3,45 @@ import { createVnode, isSameVnode, Text } from "./vnode";
 
 // https://en.wikipedia.org/wiki/Longest_increasing_subsequence
 function getSequence(arr: number[]): number[] {
-    const p = arr.slice();
-    const result = [0];
-    let i, j, u, v, c;
-    const len = arr.length;
+    const p = arr.slice()
+    const result = [0]
+    let i, j, u, v, c
+    const len = arr.length
     for (i = 0; i < len; i++) {
-      const arrI = arr[i];
+      const arrI = arr[i]
       if (arrI !== 0) {
-        j = result[result.length - 1];
+        j = result[result.length - 1]
         if (arr[j] < arrI) {
-          p[i] = j;
-          result.push(i);
-          continue;
+          p[i] = j
+          result.push(i)
+          continue
         }
-        u = 0;
-        v = result.length - 1;
+        u = 0
+        v = result.length - 1
         while (u < v) {
-          c = (u + v) >> 1;
+          c = (u + v) >> 1
           if (arr[result[c]] < arrI) {
-            u = c + 1;
+            u = c + 1
           } else {
-            v = c;
+            v = c
           }
         }
         if (arrI < arr[result[u]]) {
           if (u > 0) {
-            p[i] = result[u - 1];
+            p[i] = result[u - 1]
           }
-          result[u] = i;
+          result[u] = i
         }
       }
     }
-    u = result.length;
-    v = result[u - 1];
+    u = result.length
+    v = result[u - 1]
     while (u-- > 0) {
-      result[u] = v;
-      v = p[v];
+      result[u] = v
+      v = p[v]
     }
-    return result;
-}
+    return result
+  }
 
 export function createRenderer(renderOptions:any){
     const {
@@ -228,8 +228,6 @@ export function createRenderer(renderOptions:any){
                         }
                     }
                     // move to correct position
-                    const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap);
-                    let j = increasingNewIndexSequence.length - 1;
                     for(let i = toBePatched - 1; i >= 0; i--){
                         let index = i + s2;
                         let current = c2[index];
@@ -240,12 +238,7 @@ export function createRenderer(renderOptions:any){
                         }
                         // patched
                         else{
-                            if(j < 0 || i !== increasingNewIndexSequence[j]){
-                                hostInsert(current.el, el, anchor);
-                            }
-                            else{
-                                j--;
-                            }
+                            hostInsert(current.el, el, anchor);
                         }
                     }
 

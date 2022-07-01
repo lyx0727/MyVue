@@ -229,7 +229,6 @@ export function createRenderer(renderOptions:any){
                     }
                     // move to correct position
                     const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap);
-                    let j = increasingNewIndexSequence.length - 1;
                     for(let i = toBePatched - 1; i >= 0; i--){
                         let index = i + s2;
                         let current = c2[index];
@@ -240,12 +239,7 @@ export function createRenderer(renderOptions:any){
                         }
                         // patched
                         else{
-                            if(j < 0 || i !== increasingNewIndexSequence[j]){
-                                hostInsert(current.el, el, anchor);
-                            }
-                            else{
-                                j--;
-                            }
+                            hostInsert(current.el, el, anchor);
                         }
                     }
 
