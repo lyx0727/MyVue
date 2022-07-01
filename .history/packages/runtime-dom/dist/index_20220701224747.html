@@ -158,23 +158,19 @@
 
         // test 'setup'
         function test7(){
-            const {h, render, ref} = VueRuntimeDOM;
+            const {h, render} = VueRuntimeDOM;
             const VueComponent = {
                 setup(){
                     let age = ref(18);
-                    let name = ref('张三');
+                    let name = '张三';
                     return {
-                       age, name
+                        age, name,
                     }
                 },
                 render(){
-                    return h('div', [
-                        h('h1', this.age), 
-                        h('button', {onClick:()=>{this.age++}}, '变老')
-                    ]);
+                    return h('h1', this.age);
                 }
             }
-            render(h(VueComponent), body);
         }
 
         function testPromise(){

@@ -42,7 +42,7 @@ const publicInstanceProxy = {
         }
     },
     set(target:any, key:string|symbol, value:any){
-        const {data, props, setupState} = target;
+        const {data, props} = target;
         if(data && hasOwn(data, key)){
             data[key] = value;
         }

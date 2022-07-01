@@ -7,8 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <script src="./runtime-dom.global.js"></script>
-    <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+    <!-- <script src="./runtime-dom.global.js"></script> -->
+    <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
     <!-- <script src="../../../node_modules/@vue/runtime-core/dist/runtime-core.cjs.js"></script> -->
     <script type="text/javascript">
         const body = document.getElementsByTagName("body")[0];
@@ -158,20 +158,23 @@
 
         // test 'setup'
         function test7(){
-            const {h, render, ref} = VueRuntimeDOM;
+            const {h, render} = VueRuntimeDOM;
             const VueComponent = {
-                setup(){
-                    let age = ref(18);
-                    let name = ref('张三');
-                    return {
-                       age, name
-                    }
-                },
+                // setup(){
+                //     let age = ref(18);
+                //     let name = ref('张三');
+                //     return {
+                //         age, name,
+                //     }
+                // },
+                // render(){
+                //     return h('div', [
+                //         h('h1', this.age), 
+                //         h('button', {onClick:()=>{this.age++}})
+                //     ]);
+                // }
                 render(){
-                    return h('div', [
-                        h('h1', this.age), 
-                        h('button', {onClick:()=>{this.age++}}, '变老')
-                    ]);
+                    return h('h1', '211212');
                 }
             }
             render(h(VueComponent), body);

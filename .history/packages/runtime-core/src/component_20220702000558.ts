@@ -42,16 +42,14 @@ const publicInstanceProxy = {
         }
     },
     set(target:any, key:string|symbol, value:any){
-        const {data, props, setupState} = target;
+        const {data, props} = target;
         if(data && hasOwn(data, key)){
             data[key] = value;
+            return true;
         }
         else if(props && hasOwn(props, key)){
             console.warn('attemping to mutate prop ' + (key as string));
             return false;
-        }
-        else if(setupState && hasOwn(setupState, key)){
-            setupState[key] = value;
         }
         return true;
     }

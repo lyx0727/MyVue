@@ -1,5 +1,5 @@
-import { proxyRefs, reactive } from "@vue/reactivity";
-import { hasOwn, isFunction, isObject } from "@vue/shared";
+import { reactive } from "@vue/reactivity";
+import { hasOwn, isFunction } from "@vue/shared";
 import { initProps } from "./componentProps";
 
 export function createComponentInstance(vnode:any){
@@ -25,15 +25,12 @@ const publicPropertyMap:any = {
 
 const publicInstanceProxy = {
     get(target:any, key:string|symbol){
-        const {data, props, setupState} = target;
+        const {data, props} = target;
         if(data && hasOwn(data, key)){
             return data[key];
         }
         else if(props && hasOwn(props, key)){
             return props[key];
-        }
-        else if(setupState && hasOwn(setupState, key)){
-            return setupState[key];
         }
         // this.$attrs
         let getter = publicPropertyMap[key];
@@ -42,16 +39,14 @@ const publicInstanceProxy = {
         }
     },
     set(target:any, key:string|symbol, value:any){
-        const {data, props, setupState} = target;
+        const {data, props} = target;
         if(data && hasOwn(data, key)){
             data[key] = value;
+            return true;
         }
         else if(props && hasOwn(props, key)){
             console.warn('attemping to mutate prop ' + (key as string));
             return false;
-        }
-        else if(setupState && hasOwn(setupState, key)){
-            setupState[key] = value;
         }
         return true;
     }
@@ -74,15 +69,7 @@ export function setupComponent(instance:any){
     if(setup){
         const setupContext = {};
         const setupResult = setup(instance.props, setupContext);
-        if(isFunction(setupResult)){
-            instance.render = setupResult;
-        }
-        else if(isObject(setupResult)){
-            // remove suffix '.value'
-            instance.setupState = proxyRefs(setupResult);
-        }
+        if()
     }
-    if(!instance.rende){
-        instance.render = type.render;
-    }
+    instance.render = type.render;
 }
