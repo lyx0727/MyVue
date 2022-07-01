@@ -1,7 +1,7 @@
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { isString, ShapeFlags } from "@vue/shared";
 import { createComponentInstance, setupComponent } from "./component";
-import { hasPropsChanged, updateProps } from "./componentProps";
+import { updateProps } from "./componentProps";
 import { queueJob } from "./scheduler";
 import { createVnode, isSameVnode, Text, Fragment } from "./vnode";
 
@@ -105,16 +105,9 @@ export function createRenderer(renderOptions:any){
         setupRenderEffect(instance, container, anchor);
     }
 
-    const updateComponentPreRender = (instance:any, next:any)=>{
-        instance.next = null;
-        instance.vnode = next;
-        updateProps(instance.props, next.props);
-    }
-
     const setupRenderEffect = (instance:any, container:any, anchor:any)=>{
         const componentUpdateFn = ()=>{
             const {render} = instance;
-            // mount
             if(!instance.isMounted){
                 // set 'state' as 'this'
                 const subTree = render.call(instance.proxy);
@@ -122,13 +115,7 @@ export function createRenderer(renderOptions:any){
                 instance.subTree = subTree;
                 instance.isMounted = true;
             }
-            // update
             else{
-                let {next} = instance;
-                if(next){
-                    updateComponentPreRender(instance, next);
-                }
-
                 const subTree = render.call(instance.proxy);
                 patch(instance.subTree, subTree, container, anchor);
                 instance.subTree = subTree;
@@ -178,16 +165,8 @@ export function createRenderer(renderOptions:any){
     }
 
     const shouldUpdateComponent = (n1:any, n2:any)=>{
-        const {props:prevProps, children:prevChildren} = n1;
-        const {props:nextProps, children:nextChildren} = n2;
-
-        if(prevProps === nextProps){
-            return false;
-        }
-        if(prevChildren || nextChildren){
-            return true;
-        }
-        return hasPropsChanged(n1, n2);
+        const {props:prevProps} = n1;
+        const {props:nextProps} = n2;
     }
 
     const updateComponent = (n1:any, n2:any)=>{
@@ -199,7 +178,7 @@ export function createRenderer(renderOptions:any){
             instance.next = n2;
             instance.update();
         }
-        
+        updateProps(instance, prevProps, nextProps);
     }
     
     const processComponent = (n1:any, n2:any, container:any, anchor:any = null)=>{

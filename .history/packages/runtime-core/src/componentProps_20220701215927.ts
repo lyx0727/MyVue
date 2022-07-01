@@ -37,14 +37,14 @@ export const hasPropsChanged = (prevProps:any = {}, nextProps:any = {})=>{
     return false;
 }
 
-export function updateProps(prevProps:any, nextProps:any){
+export function updateProps(instance:any, prevProps:any, nextProps:any){
     if(hasPropsChanged(prevProps, nextProps)){
         for(const key in nextProps){
-            prevProps[key] = nextProps[key];
+            instance.props[key] = nextProps[key];
         }
-        for(const key in prevProps){
+        for(const key in instance.props){
             if(!hasOwn(nextProps, key)){
-                delete prevProps[key];
+                delete instance.props[key];
             }
         }
     }

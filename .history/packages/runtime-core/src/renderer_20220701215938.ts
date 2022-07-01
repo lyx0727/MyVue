@@ -105,16 +105,9 @@ export function createRenderer(renderOptions:any){
         setupRenderEffect(instance, container, anchor);
     }
 
-    const updateComponentPreRender = (instance:any, next:any)=>{
-        instance.next = null;
-        instance.vnode = next;
-        updateProps(instance.props, next.props);
-    }
-
     const setupRenderEffect = (instance:any, container:any, anchor:any)=>{
         const componentUpdateFn = ()=>{
             const {render} = instance;
-            // mount
             if(!instance.isMounted){
                 // set 'state' as 'this'
                 const subTree = render.call(instance.proxy);
@@ -122,13 +115,7 @@ export function createRenderer(renderOptions:any){
                 instance.subTree = subTree;
                 instance.isMounted = true;
             }
-            // update
             else{
-                let {next} = instance;
-                if(next){
-                    updateComponentPreRender(instance, next);
-                }
-
                 const subTree = render.call(instance.proxy);
                 patch(instance.subTree, subTree, container, anchor);
                 instance.subTree = subTree;
@@ -183,9 +170,6 @@ export function createRenderer(renderOptions:any){
 
         if(prevProps === nextProps){
             return false;
-        }
-        if(prevChildren || nextChildren){
-            return true;
         }
         return hasPropsChanged(n1, n2);
     }

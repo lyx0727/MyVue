@@ -108,7 +108,6 @@ export function createRenderer(renderOptions:any){
     const updateComponentPreRender = (instance:any, next:any)=>{
         instance.next = null;
         instance.vnode = next;
-        updateProps(instance.props, next.props);
     }
 
     const setupRenderEffect = (instance:any, container:any, anchor:any)=>{

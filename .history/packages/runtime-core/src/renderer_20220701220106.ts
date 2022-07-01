@@ -105,12 +105,6 @@ export function createRenderer(renderOptions:any){
         setupRenderEffect(instance, container, anchor);
     }
 
-    const updateComponentPreRender = (instance:any, next:any)=>{
-        instance.next = null;
-        instance.vnode = next;
-        updateProps(instance.props, next.props);
-    }
-
     const setupRenderEffect = (instance:any, container:any, anchor:any)=>{
         const componentUpdateFn = ()=>{
             const {render} = instance;
@@ -126,7 +120,7 @@ export function createRenderer(renderOptions:any){
             else{
                 let {next} = instance;
                 if(next){
-                    updateComponentPreRender(instance, next);
+                    
                 }
 
                 const subTree = render.call(instance.proxy);
