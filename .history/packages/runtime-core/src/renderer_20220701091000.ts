@@ -194,7 +194,6 @@ export function createRenderer(renderOptions:any){
                         if(newIndexToOldIndexMap[i] === 0){
                             patch(null, current, el, anchor);   
                         }
-                        // patched
                         else{
                             hostInsert(current.el, el, anchor);
                         }

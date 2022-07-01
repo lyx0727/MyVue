@@ -192,9 +192,8 @@ export function createRenderer(renderOptions:any){
                         let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
 
                         if(newIndexToOldIndexMap[i] === 0){
-                            patch(null, current, el, anchor);   
+                            patch(null, current, el, anchor);
                         }
-                        // patched
                         else{
                             hostInsert(current.el, el, anchor);
                         }

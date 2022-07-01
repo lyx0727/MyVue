@@ -173,15 +173,13 @@ export function createRenderer(renderOptions:any){
                     }
 
                     const toBePatched = e2 - s2 + 1;
-                    let newIndexToOldIndexMap = new Array(toBePatched).fill(0);
                     for(let i = s1; i <= e1; i++){
                         const oldChild = c1[i];
                         let newIndex = keyToNewIndexMap.get(oldChild.key);
-                        if(newIndex == null){
+                        if(newIndex){
                             unmount(oldChild);
                         }
                         else{
-                            newIndexToOldIndexMap[newIndex - s2] = i + 1;
                             patch(oldChild, c2[newIndex], el);
                         }
                     }
@@ -191,13 +189,8 @@ export function createRenderer(renderOptions:any){
                         let current = c2[index];
                         let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
 
-                        if(newIndexToOldIndexMap[i] === 0){
-                            patch(null, current, el, anchor);   
-                        }
-                        // patched
-                        else{
-                            hostInsert(current.el, el, anchor);
-                        }
+                        if()
+                        hostInsert(current.el, el, anchor);
                     }
 
                 }

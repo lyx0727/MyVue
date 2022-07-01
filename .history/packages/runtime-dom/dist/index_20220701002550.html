@@ -59,52 +59,26 @@
             }, 800);
         }
 
-        // test diff with positive sequence
+        // test diff
         function test3(){
             const {h, render} = VueRuntimeDOM;
 
-            render(h('div', [
-                h('h1', {style:{color:'blue'}, key:'hello'}, 'hello world'),
-                h('h2', {style:{color:'green'}, key:'bye'}, 'bye world'),
-                h('h3', {style:{color:'red'}, key:'old'}, 'world'),
+            render(h('div', {style:{backgroundColor:'red'}}, [
+                h('h1', {style:{color:'white'}, key:'hello'}, 'hello world'),
+                h('h2', {style:{color:'green'}, key:''}, 'goodbye world'),
             ]), body);
 
             // (array -> array)
             setTimeout(()=>{
-                render(h('div', [
-                    h('h1', {style:{color:'blue'}, key:'hello'}, 'HELLO world'),
-                    h('h2', {style:{color:'green'}, key:'bye'}, 'BYE world'),
-                    h('h3', {style:{color:'pink'}, key:'old'}, 'world'),
-                    h('h3', {style:{color:'red'}, key:'new'}, 'NEW world'),
+                render(h('div', {style:{backgroundColor:'red'}}, [
+                    h('h2', {style:{color:'white'}}, 'hello world'),
+                    h('h1', {style:{color:'green'}}, 'goodbye world'),
                 ]), body);
             }, 500);
         }
-
-        // test diff with sequence
-        function test4(){
-            const {h, render} = VueRuntimeDOM;
-
-            render(h('div', [
-                h('h1', {style:{color:'blue'}, key:'hello'}, 'hello world'),
-                h('h3', {style:{color:'pink'}, key:'world'}, 'world'),
-                h('h2', {style:{color:'green'}, key:'bye'}, 'bye world'),
-                h('h3', {style:{color:'red'}, key:'here'}, 'I am here'),
-            ]), body);
-
-            // (array -> array)
-            setTimeout(()=>{
-                render(h('div', [
-                    h('h3', {style:{color:'red'}, key:'here'}, 'I AM HERE'),
-                    h('h2', {style:{color:'green'}, key:'bye'}, 'BYE world'),
-                    h('h1', {style:{color:'blue'}, key:'hello'}, 'HELLO world'),
-                ]), body);
-            }, 500);
-        }
-
+        
         // test1();
-        // test2();
-        // test3();
-        test4();
+        test2();
     </script>
 </body>
 </html>

@@ -167,38 +167,7 @@ export function createRenderer(renderOptions:any){
 
                     const s1 = i;
                     const s2 = i;
-                    const keyToNewIndexMap = new Map;
-                    for(let i = s2; i <= e2; i++){
-                        keyToNewIndexMap.set(c2[i].key, i);
-                    }
-
-                    const toBePatched = e2 - s2 + 1;
-                    let newIndexToOldIndexMap = new Array(toBePatched).fill(0);
-                    for(let i = s1; i <= e1; i++){
-                        const oldChild = c1[i];
-                        let newIndex = keyToNewIndexMap.get(oldChild.key);
-                        if(newIndex == null){
-                            unmount(oldChild);
-                        }
-                        else{
-                            newIndexToOldIndexMap[newIndex - s2] = i + 1;
-                            patch(oldChild, c2[newIndex], el);
-                        }
-                    }
-                    // move to correct position
-                    for(let i = toBePatched - 1; i >= 0; i--){
-                        let index = i + s2;
-                        let current = c2[index];
-                        let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
-
-                        if(newIndexToOldIndexMap[i] === 0){
-                            patch(null, current, el, anchor);   
-                        }
-                        // patched
-                        else{
-                            hostInsert(current.el, el, anchor);
-                        }
-                    }
+                    
 
                 }
                 // (array -> null)

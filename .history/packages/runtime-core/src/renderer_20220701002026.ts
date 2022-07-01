@@ -20,10 +20,6 @@ export function createRenderer(renderOptions:any){
         return children[i];
     }
 
-    const unmount = (vnode:any)=>{
-        hostRemove(vnode.el);
-    };
-
     const mountChildren = (children:any, container:any)=>{
         for(let i = 0; i < children.length; i++){
             let child = normalize(children, i);
@@ -31,7 +27,7 @@ export function createRenderer(renderOptions:any){
         }
     }
 
-    const mountElement = (vnode:any, container:any, anchor:any = null)=>{
+    const mountElement = (vnode:any, container:any)=>{
         let {type, props, children, shapeFlag} = vnode;
         let el = vnode.el = hostCreateElement(type);
         if(props){
@@ -45,7 +41,7 @@ export function createRenderer(renderOptions:any){
         else if(shapeFlag & ShapeFlags.ARRAY_CHILDREN){
             mountChildren(children, el);
         }
-        hostInsert(el, container, anchor);
+        hostInsert(el, container);
     }
 
     const processText = (n1:any, n2:any, container:any)=>{
@@ -64,7 +60,7 @@ export function createRenderer(renderOptions:any){
     const processElement = (n1:any, n2:any, container:any, anchor:any = null)=>{
         // mount
         if(n1 == null){
-            mountElement(n2, container, anchor);
+            mountElement(n2, container,anchor);
         }
         // update
         else{
@@ -116,13 +112,14 @@ export function createRenderer(renderOptions:any){
                  // (array -> array)
                 if(shapeFlag & ShapeFlags.ARRAY_CHILDREN){
                     // diff
+
                     let i = 0;
                     let e1 = c1.length - 1;
                     let e2 = c2.length - 1;
 
                     while(i <= e1 && i <= e2){
                         const n1 = c1[i];
-                        const n2 = c2[i];
+                        const n2 = c1[i];
                         if(isSameVnode(n1, n2)){
                             patch(n1, n2, el);
                         }
@@ -134,7 +131,7 @@ export function createRenderer(renderOptions:any){
 
                     while(i <= e1 && i <= e2){
                         const n1 = c1[e1];
-                        const n2 = c2[e2];
+                        const n2 = c1[e2];
                         if(isSameVnode(n1, n2)){
                             patch(n1, n2, el);
                         }
@@ -153,50 +150,6 @@ export function createRenderer(renderOptions:any){
                                 patch(null, c2[i], el, anchor);
                                 i++;
                             }
-                        }
-                    }
-                    // unmount old node
-                    else if(i > e2){
-                        if(i <= e1){
-                            while(i <= e1){
-                                unmount(c1[i]);
-                                i++;
-                            }
-                        }
-                    }
-
-                    const s1 = i;
-                    const s2 = i;
-                    const keyToNewIndexMap = new Map;
-                    for(let i = s2; i <= e2; i++){
-                        keyToNewIndexMap.set(c2[i].key, i);
-                    }
-
-                    const toBePatched = e2 - s2 + 1;
-                    let newIndexToOldIndexMap = new Array(toBePatched).fill(0);
-                    for(let i = s1; i <= e1; i++){
-                        const oldChild = c1[i];
-                        let newIndex = keyToNewIndexMap.get(oldChild.key);
-                        if(newIndex == null){
-                            unmount(oldChild);
-                        }
-                        else{
-                            newIndexToOldIndexMap[newIndex - s2] = i + 1;
-                            patch(oldChild, c2[newIndex], el);
-                        }
-                    }
-                    // move to correct position
-                    for(let i = toBePatched - 1; i >= 0; i--){
-                        let index = i + s2;
-                        let current = c2[index];
-                        let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
-
-                        if(newIndexToOldIndexMap[i] === 0){
-                            patch(null, current, el, anchor);   
-                        }
-                        // patched
-                        else{
-                            hostInsert(current.el, el, anchor);
                         }
                     }
 
@@ -261,7 +214,9 @@ export function createRenderer(renderOptions:any){
         }            
     }
 
-    
+    const unmount = (vnode:any)=>{
+        hostRemove(vnode.el);
+    };
 
     const render = (vnode:any, container:any)=>{
         // unmount

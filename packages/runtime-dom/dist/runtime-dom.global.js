@@ -89,13 +89,16 @@ var VueRuntimeDOM = (() => {
       }
       return children[i];
     };
+    const unmount = (vnode) => {
+      hostRemove(vnode.el);
+    };
     const mountChildren = (children, container) => {
       for (let i = 0; i < children.length; i++) {
         let child = normalize(children, i);
         patch(null, child, container);
       }
     };
-    const mountElement = (vnode, container) => {
+    const mountElement = (vnode, container, anchor = null) => {
       let { type, props, children, shapeFlag } = vnode;
       let el = vnode.el = hostCreateElement(type);
       if (props) {
@@ -108,7 +111,7 @@ var VueRuntimeDOM = (() => {
       } else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
         mountChildren(children, el);
       }
-      hostInsert(el, container);
+      hostInsert(el, container, anchor);
     };
     const processText = (n1, n2, container) => {
       if (n1 == null) {
@@ -120,9 +123,9 @@ var VueRuntimeDOM = (() => {
         }
       }
     };
-    const processElement = (n1, n2, container) => {
+    const processElement = (n1, n2, container, anchor = null) => {
       if (n1 == null) {
-        mountElement(n2, container);
+        mountElement(n2, container, anchor);
       } else {
         patchElement(n1, n2, container);
       }
@@ -157,6 +160,75 @@ var VueRuntimeDOM = (() => {
       } else {
         if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
           if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+            let i = 0;
+            let e1 = c1.length - 1;
+            let e2 = c2.length - 1;
+            while (i <= e1 && i <= e2) {
+              const n12 = c1[i];
+              const n22 = c2[i];
+              if (isSameVnode(n12, n22)) {
+                patch(n12, n22, el);
+              } else {
+                break;
+              }
+              i++;
+            }
+            while (i <= e1 && i <= e2) {
+              const n12 = c1[e1];
+              const n22 = c2[e2];
+              if (isSameVnode(n12, n22)) {
+                patch(n12, n22, el);
+              } else {
+                break;
+              }
+              e1--;
+              e2--;
+            }
+            if (i > e1) {
+              if (i <= e2) {
+                while (i <= e2) {
+                  const nextPos = e2 + 1;
+                  const anchor = nextPos < c2.length ? c2[nextPos].el : null;
+                  patch(null, c2[i], el, anchor);
+                  i++;
+                }
+              }
+            } else if (i > e2) {
+              if (i <= e1) {
+                while (i <= e1) {
+                  unmount(c1[i]);
+                  i++;
+                }
+              }
+            }
+            const s1 = i;
+            const s2 = i;
+            const keyToNewIndexMap = /* @__PURE__ */ new Map();
+            for (let i2 = s2; i2 <= e2; i2++) {
+              keyToNewIndexMap.set(c2[i2].key, i2);
+            }
+            const toBePatched = e2 - s2 + 1;
+            let newIndexToOldIndexMap = new Array(toBePatched).fill(0);
+            for (let i2 = s1; i2 <= e1; i2++) {
+              const oldChild = c1[i2];
+              let newIndex = keyToNewIndexMap.get(oldChild.key);
+              if (newIndex == null) {
+                unmount(oldChild);
+              } else {
+                newIndexToOldIndexMap[newIndex - s2] = i2 + 1;
+                patch(oldChild, c2[newIndex], el);
+              }
+            }
+            for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
+              let index = i2 + s2;
+              let current = c2[index];
+              let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
+              if (newIndexToOldIndexMap[i2] === 0) {
+                patch(null, current, el, anchor);
+              } else {
+                hostInsert(current.el, el, anchor);
+              }
+            }
           } else {
             unmountChildren(c1);
           }
@@ -177,7 +249,7 @@ var VueRuntimeDOM = (() => {
       patchProps(oldProps, newProps, el);
       patchChildren(n1, n2, el);
     };
-    const patch = (n1, n2, container) => {
+    const patch = (n1, n2, container, anchor = null) => {
       if (n1 === n2) {
         return;
       }
@@ -192,12 +264,9 @@ var VueRuntimeDOM = (() => {
           break;
         default:
           if (shapeFlag & 1 /* ELEMENT */) {
-            processElement(n1, n2, container);
+            processElement(n1, n2, container, anchor);
           }
       }
-    };
-    const unmount = (vnode) => {
-      hostRemove(vnode.el);
     };
     const render2 = (vnode, container) => {
       if (vnode === null) {
