@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node scripts/dev.js compiler-dom -f global"
+    "dev": "node scripts/dev.js compilertime-dom -f global"
   },
   "keywords": [],
   "author": "",
