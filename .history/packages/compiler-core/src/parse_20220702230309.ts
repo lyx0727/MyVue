@@ -157,14 +157,12 @@ function parseInterpolation(context:any){
 function parseElement(context:any){
     let ele = parseTag(context);
     const children = parseChildren(context);
-    console.log(children)
 
     if(context.source.startsWith('</')){
         parseTag(context);
     }
     ele.loc = getSelection(context, ele.loc.start);
     ele.children = children;
-    return ele;
 }
 
 function parseTag(context:any){

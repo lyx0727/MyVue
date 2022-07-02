@@ -11,8 +11,7 @@ function createParserContext(template:any){
 }
 
 function isEnd(context:any){
-    const source = context.source;
-    return !source || source.startsWith('</');
+    return !context.source;
 }
 
 function getCursor(context:any){
@@ -25,7 +24,7 @@ function advancePositionWithMutation(context:any, source:any, endIndex:any){
     let linePos = -1;
     for(let i = 0; i < endIndex; i++){
         // '\n'
-        if(source.charCodeAt(i) === 10){
+        if(source.charCodeAt(i) == 10){
             linesCount++;
             linePos = i;
         }
@@ -45,13 +44,6 @@ function advanceBy(context:any, endIndex:any){
     context.source = source.slice(endIndex);
 }
 
-function advanceBySpaces(context:any){
-    const match = /^[ \t\r\n]+/.exec(context.source);
-    if(match){
-        advanceBy(context, match[0].length);
-    }
-}
-
 function getSelection(context:any, start:any, end?:any){
     end = end || getCursor(context);
     return {
@@ -64,10 +56,6 @@ function getSelection(context:any, start:any, end?:any){
 export function baseParse(template:any){
     const context = createParserContext(template);
 
-    return parseChildren(context);
-}
-
-function parseChildren(context:any){
     const nodes:any = [];
     while(!isEnd(context)){
         let node = null;
@@ -76,15 +64,16 @@ function parseChildren(context:any){
         if(source.startsWith('{{')){
             node = parseInterpolation(context);
         }
-        // element
+        // tag
         else if(source.startsWith('<')){
-            node = parseElement(context);
+            node = parseTag(context);
         }
         // text
         if(!node){
             node = parseText(context);
         }
         nodes.push(node);
+        break;
     }
     return nodes;
 }
@@ -129,58 +118,13 @@ function parseInterpolation(context:any){
     const innerEnd = getCursor(context);
 
     const rawContentLength = closeIndex - 2;
-    let preCountent = parseTextData(context, rawContentLength);
-    let content = preCountent.trim();
-
-    const startOffset = preCountent.indexOf(content);
-    // {{    xxx}}
-    if(startOffset > 0){
-        advancePositionWithMutation(innerStart, preCountent, startOffset);
-    }
-    let endOffset = startOffset + content.length;
-    advancePositionWithMutation(context, preCountent, endOffset);
+    let preCount = parseTextData(context, rawContentLength);
+    let content = preCount.trim();
 
     // ignore '}}'
-    advanceBy(context, 2);
-
-    return {
-        type: NodeTypes.INTERPOLATION,
-        content:{
-            type: NodeTypes.SIMPLE_EXPRESSION,
-            content,
-            loc: getSelection(context, innerStart, innerEnd)
-        },
-        loc: getSelection(context, start)
-    }
-}
-
-function parseElement(context:any){
-    let ele = parseTag(context);
-    const children = parseChildren(context);
-    console.log(children)
-
-    if(context.source.startsWith('</')){
-        parseTag(context);
-    }
-    ele.loc = getSelection(context, ele.loc.start);
-    ele.children = children;
-    return ele;
+    advanceBy(content, 2);
 }
 
 function parseTag(context:any){
-    const start = getCursor(context);
-    const match:any = /^<\/?([a-z][^ \t\r\n/>]*)/.exec(context.source);
-    const tag = match[1];
-    advanceBy(context, match[0].length);
-    advanceBySpaces(context);
-    // <div/>
-    let isSelfClosing = context.source.startsWith('/>');
-    advanceBy(context, isSelfClosing ? 2 : 1);
-    return {
-        type: NodeTypes.ELEMENT,
-        tag,
-        isSelfClosing,
-        children: [],
-        loc: getSelection(context, start)
-    }
+ 
 }

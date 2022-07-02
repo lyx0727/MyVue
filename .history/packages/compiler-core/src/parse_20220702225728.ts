@@ -11,8 +11,7 @@ function createParserContext(template:any){
 }
 
 function isEnd(context:any){
-    const source = context.source;
-    return !source || source.startsWith('</');
+    return !context.source;
 }
 
 function getCursor(context:any){
@@ -64,10 +63,6 @@ function getSelection(context:any, start:any, end?:any){
 export function baseParse(template:any){
     const context = createParserContext(template);
 
-    return parseChildren(context);
-}
-
-function parseChildren(context:any){
     const nodes:any = [];
     while(!isEnd(context)){
         let node = null;
@@ -87,6 +82,10 @@ function parseChildren(context:any){
         nodes.push(node);
     }
     return nodes;
+}
+
+function parseChildren(context:any){
+    
 }
 
 function parseTextData(context:any, endIndex:any){
@@ -156,15 +155,10 @@ function parseInterpolation(context:any){
 
 function parseElement(context:any){
     let ele = parseTag(context);
-    const children = parseChildren(context);
-    console.log(children)
-
     if(context.source.startsWith('</')){
         parseTag(context);
     }
     ele.loc = getSelection(context, ele.loc.start);
-    ele.children = children;
-    return ele;
 }
 
 function parseTag(context:any){
@@ -180,7 +174,6 @@ function parseTag(context:any){
         type: NodeTypes.ELEMENT,
         tag,
         isSelfClosing,
-        children: [],
         loc: getSelection(context, start)
     }
 }

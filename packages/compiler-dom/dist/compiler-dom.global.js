@@ -35,7 +35,8 @@ var VueCompilerDOM = (() => {
     };
   }
   function isEnd(context) {
-    return !context.source;
+    const source = context.source;
+    return !source || source.startsWith("</");
   }
   function getCursor(context) {
     let { line, column, offset } = context;
@@ -45,7 +46,7 @@ var VueCompilerDOM = (() => {
     let linesCount = 0;
     let linePos = -1;
     for (let i = 0; i < endIndex; i++) {
-      if (source.charCodeAt(i) == 10) {
+      if (source.charCodeAt(i) === 10) {
         linesCount++;
         linePos = i;
       }
@@ -59,6 +60,12 @@ var VueCompilerDOM = (() => {
     advancePositionWithMutation(context, source, endIndex);
     context.source = source.slice(endIndex);
   }
+  function advanceBySpaces(context) {
+    const match = /^[ \t\r\n]+/.exec(context.source);
+    if (match) {
+      advanceBy(context, match[0].length);
+    }
+  }
   function getSelection(context, start, end) {
     end = end || getCursor(context);
     return {
@@ -69,18 +76,22 @@ var VueCompilerDOM = (() => {
   }
   function baseParse(template) {
     const context = createParserContext(template);
+    return parseChildren(context);
+  }
+  function parseChildren(context) {
     const nodes = [];
     while (!isEnd(context)) {
       let node = null;
       const source = context.source;
       if (source.startsWith("{{")) {
+        node = parseInterpolation(context);
       } else if (source.startsWith("<")) {
+        node = parseElement(context);
       }
       if (!node) {
         node = parseText(context);
       }
       nodes.push(node);
-      break;
     }
     return nodes;
   }
@@ -104,6 +115,59 @@ var VueCompilerDOM = (() => {
     return {
       type: 2 /* TEXT */,
       content,
+      loc: getSelection(context, start)
+    };
+  }
+  function parseInterpolation(context) {
+    const start = getCursor(context);
+    const closeIndex = context.source.indexOf("}}", "{{".length);
+    advanceBy(context, 2);
+    const innerStart = getCursor(context);
+    const innerEnd = getCursor(context);
+    const rawContentLength = closeIndex - 2;
+    let preCountent = parseTextData(context, rawContentLength);
+    let content = preCountent.trim();
+    const startOffset = preCountent.indexOf(content);
+    if (startOffset > 0) {
+      advancePositionWithMutation(innerStart, preCountent, startOffset);
+    }
+    let endOffset = startOffset + content.length;
+    advancePositionWithMutation(context, preCountent, endOffset);
+    advanceBy(context, 2);
+    return {
+      type: 5 /* INTERPOLATION */,
+      content: {
+        type: 4 /* SIMPLE_EXPRESSION */,
+        content,
+        loc: getSelection(context, innerStart, innerEnd)
+      },
+      loc: getSelection(context, start)
+    };
+  }
+  function parseElement(context) {
+    let ele = parseTag(context);
+    const children = parseChildren(context);
+    console.log(children);
+    if (context.source.startsWith("</")) {
+      parseTag(context);
+    }
+    ele.loc = getSelection(context, ele.loc.start);
+    ele.children = children;
+    return ele;
+  }
+  function parseTag(context) {
+    const start = getCursor(context);
+    const match = /^<\/?([a-z][^ \t\r\n/>]*)/.exec(context.source);
+    const tag = match[1];
+    advanceBy(context, match[0].length);
+    advanceBySpaces(context);
+    let isSelfClosing = context.source.startsWith("/>");
+    advanceBy(context, isSelfClosing ? 2 : 1);
+    return {
+      type: 1 /* ELEMENT */,
+      tag,
+      isSelfClosing,
+      children: [],
       loc: getSelection(context, start)
     };
   }

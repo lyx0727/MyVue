@@ -164,7 +164,6 @@ function parseElement(context:any){
     }
     ele.loc = getSelection(context, ele.loc.start);
     ele.children = children;
-    return ele;
 }
 
 function parseTag(context:any){

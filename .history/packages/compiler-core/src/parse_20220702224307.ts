@@ -11,8 +11,7 @@ function createParserContext(template:any){
 }
 
 function isEnd(context:any){
-    const source = context.source;
-    return !source || source.startsWith('</');
+    return !context.source;
 }
 
 function getCursor(context:any){
@@ -46,10 +45,7 @@ function advanceBy(context:any, endIndex:any){
 }
 
 function advanceBySpaces(context:any){
-    const match = /^[ \t\r\n]+/.exec(context.source);
-    if(match){
-        advanceBy(context, match[0].length);
-    }
+    
 }
 
 function getSelection(context:any, start:any, end?:any){
@@ -64,10 +60,6 @@ function getSelection(context:any, start:any, end?:any){
 export function baseParse(template:any){
     const context = createParserContext(template);
 
-    return parseChildren(context);
-}
-
-function parseChildren(context:any){
     const nodes:any = [];
     while(!isEnd(context)){
         let node = null;
@@ -76,15 +68,16 @@ function parseChildren(context:any){
         if(source.startsWith('{{')){
             node = parseInterpolation(context);
         }
-        // element
+        // tag
         else if(source.startsWith('<')){
-            node = parseElement(context);
+            node = parseTag(context);
         }
         // text
         if(!node){
             node = parseText(context);
         }
         nodes.push(node);
+        break
     }
     return nodes;
 }
@@ -154,33 +147,10 @@ function parseInterpolation(context:any){
     }
 }
 
-function parseElement(context:any){
-    let ele = parseTag(context);
-    const children = parseChildren(context);
-    console.log(children)
-
-    if(context.source.startsWith('</')){
-        parseTag(context);
-    }
-    ele.loc = getSelection(context, ele.loc.start);
-    ele.children = children;
-    return ele;
-}
-
 function parseTag(context:any){
     const start = getCursor(context);
     const match:any = /^<\/?([a-z][^ \t\r\n/>]*)/.exec(context.source);
     const tag = match[1];
     advanceBy(context, match[0].length);
     advanceBySpaces(context);
-    // <div/>
-    let isSelfClosing = context.source.startsWith('/>');
-    advanceBy(context, isSelfClosing ? 2 : 1);
-    return {
-        type: NodeTypes.ELEMENT,
-        tag,
-        isSelfClosing,
-        children: [],
-        loc: getSelection(context, start)
-    }
 }
