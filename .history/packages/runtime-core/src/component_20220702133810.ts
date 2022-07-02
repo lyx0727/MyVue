@@ -3,9 +3,6 @@ import { hasOwn, isFunction, isObject, ShapeFlags } from "@vue/shared";
 import { initProps } from "./componentProps";
 
 export let currentInstance = null;
-export function setCurrentInstance(instance:any){
-    currentInstance = instance;
-}
 
 export function createComponentInstance(vnode:any){
     const instance = {

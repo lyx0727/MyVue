@@ -1,6 +1,6 @@
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { invokeArrayFns, isString, ShapeFlags } from "@vue/shared";
-import { createComponentInstance, setCurrentInstance, setupComponent } from "./component";
+import { createComponentInstance, setupComponent } from "./component";
 import { hasPropsChanged, updateProps } from "./componentProps";
 import { queueJob } from "./scheduler";
 import { createVnode, isSameVnode, Text, Fragment } from "./vnode";
@@ -99,9 +99,7 @@ export function createRenderer(renderOptions:any){
         const instance = vnode.component = createComponentInstance(vnode);
 
         // 2. assign value to the instance
-        setCurrentInstance(instance);
         setupComponent(instance);
-        setCurrentInstance(null);
 
         // 3. create an 'effect'
         setupRenderEffect(instance, container, anchor);
@@ -126,12 +124,12 @@ export function createRenderer(renderOptions:any){
                 // set 'state' as 'this'
                 const subTree = render.call(instance.proxy);
                 patch(null, subTree, container, anchor);
-                instance.subTree = subTree;
-                instance.isMounted = true;
-                // mounted
+                // mount
                 if(m){
                     invokeArrayFns(m);
                 }
+                instance.subTree = subTree;
+                instance.isMounted = true;
             }
             // update
             else{
@@ -139,17 +137,10 @@ export function createRenderer(renderOptions:any){
                 if(next){
                     updateComponentPreRender(instance, next);
                 }
-                // before update
-                if(bu){
-                    invokeArrayFns(bu);
-                }
+
                 const subTree = render.call(instance.proxy);
                 patch(instance.subTree, subTree, container, anchor);
                 instance.subTree = subTree;
-                // updated
-                if(u){
-                    invokeArrayFns(u);
-                }
             }
         }
 

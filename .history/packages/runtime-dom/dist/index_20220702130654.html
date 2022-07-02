@@ -7,8 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <script src="./runtime-dom.global.js"></script>
-    <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+    <!-- <script src="./runtime-dom.global.js"></script> -->
+    <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
     <!-- <script src="../../../node_modules/@vue/runtime-core/dist/runtime-core.cjs.js"></script> -->
     <script type="text/javascript">
         const body = document.getElementsByTagName("body")[0];
@@ -221,33 +221,7 @@
 
         // test lifecycle
         function test9(){
-            const {ref, h, render, onBeforeMount, onMounted, onBeforeUpdate, onUpdated} = VueRuntimeDOM;
-            const lifecycle = ()=>{
-                onBeforeMount(()=>{
-                    console.log('before mounted');
-                })
-                onMounted(()=>{
-                    console.log('mounted');
-                })
-                onBeforeUpdate(()=>{
-                    console.log('before update');
-                })
-                onUpdated(()=>{
-                    console.log('update')
-                })
-            }
-
-            const VueComponent = {
-                setup(){
-                    lifecycle();
-                    const hello = ref('hello');
-                    return {hello};
-                },
-                render(){
-                    return h('a',{href:'#', onClick:()=>{this.hello+='!'}} ,this.hello);
-                }
-            }
-            render(h(VueComponent), body);
+            const {h, ref, unMounted} = VueRuntimeDOM;
         }
 
         function testPromise(){
@@ -294,8 +268,7 @@
         // test5();
         // test6();
         // test7();
-        // test8();
-        test9();
+        test8();
     </script>
 </body>
 </html>

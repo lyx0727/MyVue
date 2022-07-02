@@ -2,11 +2,6 @@ import { proxyRefs, reactive } from "@vue/reactivity";
 import { hasOwn, isFunction, isObject, ShapeFlags } from "@vue/shared";
 import { initProps } from "./componentProps";
 
-export let currentInstance = null;
-export function setCurrentInstance(instance:any){
-    currentInstance = instance;
-}
-
 export function createComponentInstance(vnode:any){
     const instance = {
         data: null, 
@@ -95,7 +90,7 @@ export function setupComponent(instance:any){
                 handler && handler(...args);
             },
             // slots
-            slots: instance.slots,
+            slots: instance.slots
             // attrs
             attrs: instance.attrs
         };

@@ -1,6 +1,6 @@
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { invokeArrayFns, isString, ShapeFlags } from "@vue/shared";
-import { createComponentInstance, setCurrentInstance, setupComponent } from "./component";
+import { createComponentInstance, setupComponent } from "./component";
 import { hasPropsChanged, updateProps } from "./componentProps";
 import { queueJob } from "./scheduler";
 import { createVnode, isSameVnode, Text, Fragment } from "./vnode";
@@ -99,9 +99,7 @@ export function createRenderer(renderOptions:any){
         const instance = vnode.component = createComponentInstance(vnode);
 
         // 2. assign value to the instance
-        setCurrentInstance(instance);
         setupComponent(instance);
-        setCurrentInstance(null);
 
         // 3. create an 'effect'
         setupRenderEffect(instance, container, anchor);

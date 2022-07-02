@@ -221,33 +221,7 @@
 
         // test lifecycle
         function test9(){
-            const {ref, h, render, onBeforeMount, onMounted, onBeforeUpdate, onUpdated} = VueRuntimeDOM;
-            const lifecycle = ()=>{
-                onBeforeMount(()=>{
-                    console.log('before mounted');
-                })
-                onMounted(()=>{
-                    console.log('mounted');
-                })
-                onBeforeUpdate(()=>{
-                    console.log('before update');
-                })
-                onUpdated(()=>{
-                    console.log('update')
-                })
-            }
 
-            const VueComponent = {
-                setup(){
-                    lifecycle();
-                    const hello = ref('hello');
-                    return {hello};
-                },
-                render(){
-                    return h('a',{href:'#', onClick:()=>{this.hello+='!'}} ,this.hello);
-                }
-            }
-            render(h(VueComponent), body);
         }
 
         function testPromise(){
@@ -294,8 +268,7 @@
         // test5();
         // test6();
         // test7();
-        // test8();
-        test9();
+        test8();
     </script>
 </body>
 </html>
