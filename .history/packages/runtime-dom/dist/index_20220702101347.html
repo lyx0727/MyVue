@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="./runtime-dom.global.js"></script>
+    <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+    <!-- <script src="../../../node_modules/@vue/runtime-core/dist/runtime-core.cjs.js"></script> -->
+    <script type="text/javascript">
+        const body = document.getElementsByTagName("body")[0];
+        // test mount and unmount
+        function test1(){
+            const {h, render} = VueRuntimeDOM;
+            render(h('div', {style:{backgroundColor:'red'}}, [
+                h('h1', {style:{color:'white'}}, 'hello world'),
+                h('h2', {style:{color:'green'}}, 'goodbye world'),
+            ]), body);
+
+            setTimeout(()=>{
+                render(null, body);
+            }, 1000);
+        }
+
+        // test render without 'diff'
+        function test2(){
+            const {h, render, Text} = VueRuntimeDOM;
+            render(h('div', {style:{backgroundColor:'gray'}}, [
+                h('h1', {style:{color:'red'}}, 'hello world'),
+                h('h2', {style:{color:'green'}}, 'goodbye world'),
+            ]), body);
+
+            // (array -> text)
+            setTimeout(()=>{
+                render(h('div', 'world'), body);
+            }, 200);
+
+            // (text -> text)
+            setTimeout(()=>{
+                render(h('div', {style:{color:'red'}}, 'WORLD'), body);
+            }, 400);
+
+            // (text -> array)
+            setTimeout(()=>{
+                render(h('div', {style:{backgroundColor:'yellow'}}, [
+                    h('h1', {style:{color:'red'}}, 'hello world'),
+                    h('h2', {style:{color:'green'}}, 'goodbye world'),
+                ]), body);
+            }, 600);
+
+            // -> another 'vnode'
+            setTimeout(()=>{
+                render(h('h1', {style:{backgroundColor:'white'}}, [
+                    'HELLO'
+                ]), body);
+            }, 800);
+        }
+
+        // test 'diff' with positive sequence
+        function test3(){
+            const {h, render} = VueRuntimeDOM;
+
+            render(h('div', [
+                h('h1', {style:{color:'blue'}, key:'hello'}, 'hello world'),
+                h('h2', {style:{color:'green'}, key:'bye'}, 'bye world'),
+                h('h3', {style:{color:'red'}, key:'old'}, 'world'),
+            ]), body);
+
+            // (array -> array)
+            setTimeout(()=>{
+                render(h('div', [
+                    h('h1', {style:{color:'blue'}, key:'hello'}, 'HELLO world'),
+                    h('h2', {style:{color:'green'}, key:'bye'}, 'BYE world'),
+                    h('h3', {style:{color:'pink'}, key:'old'}, 'world'),
+                    h('h3', {style:{color:'red'}, key:'new'}, 'NEW world'),
+                ]), body);
+            }, 500);
+        }
+
+        // test 'diff'
+        function test4(){
+            const {h, render} = VueRuntimeDOM;
+
+            render(h('div', [
+                h('h1', {style:{color:'blue'}, key:'hello'}, 'hello world'),
+                h('h3', {style:{color:'pink'}, key:'world'}, 'world'),
+                h('h2', {style:{color:'green'}, key:'bye'}, 'bye world'),
+                h('h3', {style:{color:'red'}, key:'here'}, 'I am here'),
+            ]), body);
+
+            // (array -> array)
+            setTimeout(()=>{
+                render(h('div', [
+                    h('h3', {style:{color:'red'}, key:'here'}, 'I AM HERE'),
+                    h('h2', {style:{color:'green'}, key:'bye'}, 'BYE world'),
+                    h('h1', {style:{color:'blue'}, key:'hello'}, 'HELLO world'),
+                ]), body);
+            }, 500);
+        }
+
+        // test render component
+        function test5(){
+            const {render, h} = VueRuntimeDOM;
+
+            const VueComponent = {
+                props:{
+                    country:String
+                },
+                data(){
+                    return {
+                        name: '张三',
+                        age: '18'
+                    }
+                },
+                render(){
+                    return h('div', [
+                        h('h1', `Hello ${this.name}`),
+                        h('a', {href:'#', onClick:()=>{this.age++}}, `今年${this.age}岁`),
+                        h('button', {onClick:()=>{this.$attrs.city += '6'}}, this.country + ' ' + this.$attrs.city),
+                    ]);
+                }
+            } 
+            console.log(h(VueComponent));
+
+            render(h(VueComponent, {country: 'China', city: 'Shanghai'}), body);
+        }
+        
+        // test update component
+        function test6(){
+            const {render, h, Fragment} = VueRuntimeDOM;
+            const Child = {
+                props:{
+                    country:String
+                },
+                render(){
+                    return h('h1', this.country);
+                }
+            }
+
+            const Parent = {
+                data(){
+                    return {
+                        en: true
+                    }
+                },
+                render(){
+                    return h(Fragment, [
+                        h(Child, {country: this.en ? 'China' : '中国'}),
+                        h('button', {onClick:()=>{this.en = !this.en}}, this.en ? 'English' : '中文')
+                    ]);
+                }
+            }
+            render(h(Parent), body);
+        }
+
+        // test 'setup'
+        function test7(){
+            const {h, render, ref} = VueRuntimeDOM;
+            const VueComponent = {
+                setup(){
+                    let age = ref(18);
+                    let name = ref('张三');
+                    return {
+                       age, name
+                    }
+                },
+                render(){
+                    return h('div', [
+                        h('h1', this.age), 
+                        h('button', {onClick:()=>{this.age++}}, '变老')
+                    ]);
+                }
+            }
+            render(h(VueComponent), body);
+        }
+
+        // test 'event' and 'slots'
+        function test8(){
+            const {h, render, ref} = VueRuntimeDOM;
+            const Child = {
+                setup(props, {emit, slots}){
+                    const age = ref(18);
+
+                    return ()=>{
+                        return h('div',{style:{backgroundColor:'tomato', width:'200px', height:'200px'}}, [
+                            h('h1', 'Child'),
+                            h('button', {
+                                onClick:()=>{
+                                    age.value++; 
+                                    emit('get', age.value);
+                                }
+                            }, 'grow'),
+                            h('div', slots.slot1()),
+                            h('div', slots.slot2())
+                        ])
+                    }
+                }
+            }
+            const Parent = {
+                setup(props){
+                    const age = ref(18);
+                    return {
+                        age
+                    }
+                },
+                render(){
+                    return h('div', {style:{backgroundColor:'red', width:'500px', height:'500px'}}, [
+                            h('h1', 'Parent'),
+                            h('h2', this.age),
+                            h(Child, {onGet:(age)=>{this.age = age}}, {
+                                slot1: ()=>h('h1', 'slot1'),
+                                slot2: ()=>h('h2', 'slot2'),
+                            })
+                        ])  
+                }
+            }
+            render(h(Parent), body);
+        }
+
+        function testPromise(){
+            const promise = Promise.resolve();
+            let close = false;
+            const queue = [];
+            const queueJob = (cb)=>{
+                if(!queue.includes(cb)){
+                    queue.push(cb);
+                }
+                if(!close){
+                    close = true;
+                    promise.then(()=>{
+                        close = false;
+                        let copy = queue.slice();
+                        queue.length = 0;
+                        for(const job of copy){
+                            job();
+                        }
+                        copy.length = 0;
+                    });
+                }
+            }
+            const update = ()=>{
+                console.log('@');
+                render();
+            }
+            const render = ()=>{
+                setTimeout(()=>{
+                    // update();
+                    // update();
+                    queueJob(update);
+                    queueJob(update);
+                }, 500);
+
+            }
+            // render();
+        }
+
+        // test1();
+        // test2();
+        // test3();
+        // test4();
+        // test5();
+        // test6();
+        // test7();
+        test8();
+    </script>
+</body>
+</html>
