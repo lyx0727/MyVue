@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- <script src="./runtime-dom.global.js"></script> -->
+    <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+    <script type="text/javascript">
+        const body = document.getElementsByTagName('body')[0];
+        const { render, h, toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, createTextVNode: _createTextVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = VueRuntimeDOM;
+        const VueComponent = {
+            setup(){
+                const a = ref('a');
+                return {a};
+            },
+            render(_ctx){
+                let vnode = (_openBlock(), _createElementBlock("div", null, [
+                    _createTextVNode(" Hello World "),
+                    _createElementVNode("span", null, [
+                    _createTextVNode(_toDisplayString(_ctx.a) + " 123 123 " + _toDisplayString(_ctx.b) + " ", 1 /* TEXT */),
+                    _createElementVNode("i"),
+                    _createTextVNode(" 123 "),
+                    _createElementVNode("p", null, _toDisplayString(_ctx.a), 1 /* TEXT */)
+                    ]),
+                    _createTextVNode(" " + _toDisplayString(_ctx.console.log('hello')), 1 /* TEXT */)
+                ]));
+                console.log(vnode);
+                return h(vnode);
+            }
+        }
+        render(h(VueComponent), body)
+    </script>
+</body>
+</html>

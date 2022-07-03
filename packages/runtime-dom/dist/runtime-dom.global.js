@@ -27,7 +27,10 @@ var VueRuntimeDOM = (() => {
     Text: () => Text,
     computed: () => computed,
     createComponentInstance: () => createComponentInstance,
+    createElementBlock: () => createElementBlock,
+    createElementVNode: () => createVnode,
     createRenderer: () => createRenderer,
+    createTextVNode: () => createTextVNode,
     createVnode: () => createVnode,
     currentInstance: () => currentInstance,
     effect: () => effect,
@@ -39,12 +42,14 @@ var VueRuntimeDOM = (() => {
     onBeforeUpdate: () => onBeforeUpdate,
     onMounted: () => onMounted,
     onUpdated: () => onUpdated,
+    openBlock: () => openBlock,
     proxyRefs: () => proxyRefs,
     reactive: () => reactive,
     ref: () => ref,
     render: () => render,
     setCurrentInstance: () => setCurrentInstance,
     setupComponent: () => setupComponent,
+    toDisplayString: () => toDisplayString,
     toRef: () => toRef,
     toRefs: () => toRefs,
     watch: () => watch
@@ -518,7 +523,7 @@ var VueRuntimeDOM = (() => {
   function isSameVnode(n1, n2) {
     return n1.type === n2.type && n1.key === n2.key;
   }
-  function createVnode(type, props, children = null) {
+  function createVnode(type, props, children = null, patchFlag = 0) {
     let shapeFlag = isString(type) ? 1 /* ELEMENT */ : isObject(type) ? 4 /* STATEFUL_COMPONENT */ : isFunction(type) ? 2 /* FUNCTIONAL_COMPONENT */ : 0;
     const vnode = {
       type,
@@ -527,7 +532,8 @@ var VueRuntimeDOM = (() => {
       el: null,
       key: props == null ? void 0 : props["key"],
       __v_isVnode: true,
-      shapeFlag
+      shapeFlag,
+      patchFlag
     };
     if (children) {
       let type2 = 0;
@@ -541,7 +547,28 @@ var VueRuntimeDOM = (() => {
       }
       vnode.shapeFlag |= type2;
     }
+    if (currentBlock && vnode.patchFlag > 0) {
+      currentBlock.push(vnode);
+    }
     return vnode;
+  }
+  var currentBlock = null;
+  function openBlock() {
+    currentBlock = [];
+  }
+  function createElementBlock(type, props, children, patchFlag) {
+    return setupBlock(createVnode(type, props, children, patchFlag));
+  }
+  function createTextVNode(text = " ", patchFlag = 0) {
+    return createVnode(Text, null, text, patchFlag);
+  }
+  function setupBlock(vnode) {
+    vnode.dynamicChildren = currentBlock;
+    currentBlock = null;
+    return vnode;
+  }
+  function toDisplayString(value) {
+    return isString(value) ? value : value == null ? "" : isObject(value) ? JSON.stringify(value) : String(value);
   }
 
   // packages/runtime-core/src/renderer.ts
@@ -646,7 +673,7 @@ var VueRuntimeDOM = (() => {
           if (bm) {
             invokeArrayFns(bm);
           }
-          const subTree = render3.call(instance.proxy);
+          const subTree = render3.call(instance.proxy, instance.proxy);
           patch(null, subTree, container, anchor);
           instance.subTree = subTree;
           instance.isMounted = true;
@@ -661,7 +688,7 @@ var VueRuntimeDOM = (() => {
           if (bu) {
             invokeArrayFns(bu);
           }
-          const subTree = render3.call(instance.proxy);
+          const subTree = render3.call(instance.proxy, instance.proxy);
           patch(instance.subTree, subTree, container, anchor);
           instance.subTree = subTree;
           if (u) {
@@ -696,7 +723,7 @@ var VueRuntimeDOM = (() => {
       if (n1 == null) {
         mountElement(n2, container, anchor);
       } else {
-        patchElement(n1, n2, container);
+        patchElement(n1, n2);
       }
     };
     const shouldUpdateComponent = (n1, n2) => {
@@ -842,12 +869,21 @@ var VueRuntimeDOM = (() => {
         }
       }
     };
-    const patchElement = (n1, n2, container) => {
+    const patchBlockChildren = (n1, n2) => {
+      for (let i = 0; i < n2.dynamicChildren.length; i++) {
+        patchElement(n1.dynamicChildren[i], n2.dynamicChildren[i]);
+      }
+    };
+    const patchElement = (n1, n2) => {
       const el = n2.el = n1.el;
       let oldProps = n1.props || {};
       let newProps = n2.props || {};
       patchProps(oldProps, newProps, el);
-      patchChildren(n1, n2, el);
+      if (n2.dynamicChildren) {
+        patchBlockChildren(n1, n2);
+      } else {
+        patchChildren(n1, n2, el);
+      }
     };
     const patch = (n1, n2, container, anchor = null) => {
       if (n1 === n2) {
