@@ -1,1 +1,0 @@
-export {createRender} from './renderer'
